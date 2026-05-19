@@ -69,6 +69,14 @@ lock file, `skill-sync` stops instead of deleting everything. Only
 set `AGENT_HUB_CONFIRM_EMPTY_THIRDPARTY=1` when the user explicitly wants no
 npx-managed global skills.
 
+For personal/private skill changes only, run:
+
+```bash
+./scripts/skill-sync --personal-only
+```
+
+This links private skills and skips the slower third-party `npx skills` phase.
+
 ### Add A Private Skill
 
 1. Create a directory under `skills/`.

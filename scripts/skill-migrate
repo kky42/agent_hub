@@ -25,8 +25,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml
-
 manifest = Path(sys.argv[1])
 lock_file = Path(sys.argv[2])
 
@@ -35,7 +33,79 @@ agent_name_to_slug = {
     "Codex": "codex",
 }
 
-existing = yaml.safe_load(manifest.read_text()) if manifest.exists() else {}
+def clean_scalar(value: str):
+    value = value.strip()
+    if " #" in value:
+        value = value.split(" #", 1)[0].rstrip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    return value
+
+
+def load_manifest(path: Path):
+    if not path.exists():
+        return {"skills": []}
+
+    skills = []
+    current = None
+    current_list_key = None
+
+    for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("skills:"):
+            current = None
+            current_list_key = None
+            continue
+        if stripped.startswith("- "):
+            item = stripped[2:].strip()
+            if ":" in item:
+                key, value = item.split(":", 1)
+                if key.strip() == "skill":
+                    current = {"skill": clean_scalar(value)}
+                    skills.append(current)
+                    current_list_key = None
+                    continue
+            if current is None or current_list_key is None:
+                raise SystemExit(f"{path}:{line_no}: list item without a list key")
+            current.setdefault(current_list_key, []).append(clean_scalar(item))
+            continue
+        if current is None:
+            raise SystemExit(f"{path}:{line_no}: expected a skill entry")
+        if ":" not in stripped:
+            raise SystemExit(f"{path}:{line_no}: expected key: value")
+        key, value = stripped.split(":", 1)
+        key = key.strip()
+        if value.strip():
+            current[key] = clean_scalar(value)
+            current_list_key = None
+        else:
+            current[key] = []
+            current_list_key = key
+
+    return {"skills": skills}
+
+
+def dump_manifest(data):
+    lines = ["skills:"]
+    for item in data.get("skills") or []:
+        lines.append(f"- skill: {item['skill']}")
+        lines.append(f"  source: {item['source']}")
+        lines.append("  agents:")
+        for agent in item.get("agents") or []:
+            lines.append(f"  - {agent}")
+        if item.get("copy", False):
+            lines.append("  copy: true")
+    return "\n".join(lines) + "\n"
+
+
+existing = load_manifest(manifest)
 existing_skills = {
     item["skill"]: item
     for item in (existing or {}).get("skills", [])
@@ -84,6 +154,6 @@ output = {
     "skills": [existing_skills[name] for name in sorted(existing_skills)]
 }
 
-manifest.write_text(yaml.safe_dump(output, sort_keys=False, allow_unicode=True))
+manifest.write_text(dump_manifest(output), encoding="utf-8")
 print(f"wrote {len(output['skills'])} third-party skill record(s) to {manifest}")
 PY

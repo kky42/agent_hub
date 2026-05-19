@@ -6,9 +6,40 @@ private_skills="$repo_root/skills"
 manifest="$repo_root/thirdparty-skills.yml"
 lock_file="${XDG_STATE_HOME:-$HOME/.agents}/skills/.skill-lock.json"
 default_private_targets="$HOME/.agents/skills:$HOME/.claude/skills"
+sync_thirdparty=1
 
 : "${AGENT_HUB_SKILL_TARGETS:=$default_private_targets}"
 : "${AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS:=5}"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./scripts/skill-sync [--personal-only|--private-only]
+
+Options:
+  --personal-only    Link personal skills only; skip third-party npx skills sync.
+  --private-only     Alias for --personal-only.
+  -h, --help         Show this help.
+EOF
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --personal-only|--private-only)
+      sync_thirdparty=0
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
 
 if [ -z "${XDG_STATE_HOME:-}" ]; then
   lock_file="$HOME/.agents/.skill-lock.json"
@@ -26,8 +57,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-
-import yaml
 
 private_root = Path(sys.argv[1]).resolve()
 target_roots = [
@@ -50,18 +79,28 @@ def resolve(path: Path) -> Path:
     return path.resolve(strict=False)
 
 
+def clean_scalar(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    return value
+
+
 def frontmatter_name(skill_md: Path):
     lines = skill_md.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
         return None
 
-    body = []
     for line in lines[1:]:
         if line.strip() == "---":
-            parsed = yaml.safe_load("\n".join(body)) or {}
-            name = parsed.get("name")
+            return None
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or ":" not in stripped:
+            continue
+        key, value = stripped.split(":", 1)
+        if key.strip() == "name":
+            name = clean_scalar(value)
             return str(name) if name else None
-        body.append(line)
 
     return None
 
@@ -142,6 +181,11 @@ for target_root in target_roots:
         print(f"linked private skill: {target} -> {source}", flush=True)
 PY
 
+if [ "$sync_thirdparty" -eq 0 ]; then
+  echo "skipped third-party skill sync"
+  exit 0
+fi
+
 if ! command -v npx >/dev/null 2>&1; then
   echo "npx is required" >&2
   exit 1
@@ -155,13 +199,70 @@ import sys
 import time
 from pathlib import Path
 
-import yaml
-
 manifest = Path(sys.argv[1])
 lock_file = Path(sys.argv[2])
 sleep_seconds = float(os.environ.get("AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS", "5"))
 
-data = yaml.safe_load(manifest.read_text()) or {}
+def clean_scalar(value: str):
+    value = value.strip()
+    if " #" in value:
+        value = value.split(" #", 1)[0].rstrip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    return value
+
+
+def load_manifest(path: Path):
+    if not path.exists():
+        return {"skills": []}
+
+    skills = []
+    current = None
+    current_list_key = None
+
+    for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("skills:"):
+            current = None
+            current_list_key = None
+            continue
+        if stripped.startswith("- "):
+            item = stripped[2:].strip()
+            if ":" in item:
+                key, value = item.split(":", 1)
+                if key.strip() == "skill":
+                    current = {"skill": clean_scalar(value)}
+                    skills.append(current)
+                    current_list_key = None
+                    continue
+            if current is None or current_list_key is None:
+                raise SystemExit(f"{path}:{line_no}: list item without a list key")
+            current.setdefault(current_list_key, []).append(clean_scalar(item))
+            continue
+        if current is None:
+            raise SystemExit(f"{path}:{line_no}: expected a skill entry")
+        if ":" not in stripped:
+            raise SystemExit(f"{path}:{line_no}: expected key: value")
+        key, value = stripped.split(":", 1)
+        key = key.strip()
+        if value.strip():
+            current[key] = clean_scalar(value)
+            current_list_key = None
+        else:
+            current[key] = []
+            current_list_key = key
+
+    return {"skills": skills}
+
+
+data = load_manifest(manifest)
 skills = data.get("skills") or []
 
 desired = {}

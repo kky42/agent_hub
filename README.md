@@ -30,13 +30,14 @@ If this machine already has skills installed by `npx skills`, import them first:
 For personal skills, add/edit/remove skill folders under `skills/`, then run:
 
 ```bash
-./scripts/skill-sync
+./scripts/skill-sync --personal-only
 ```
 
 Personal skills are linked as flat folders such as
 `~/.agents/skills/kaggle` and `~/.claude/skills/kaggle`. Edits to an active
 linked skill are visible immediately; run `skill-sync` after adding, removing,
-or renaming skill folders.
+or renaming skill folders. Use `--personal-only` when you do not want to spend
+time refreshing third-party skills.
 
 For third-party skills, update `thirdparty-skills.yml` first, then run:
 
