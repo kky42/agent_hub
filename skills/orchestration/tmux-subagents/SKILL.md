@@ -5,8 +5,8 @@ description: Orchestrate long-lived CLI coding agents through tmux as worker ses
 
 # Tmux Subagents
 
-Use CLI agents as worker processes with explicit lifecycle, permissions, and
-result parsing. Use tmux only when interactive steering is useful.
+Use CLI agents as worker processes with explicit lifecycle, permissions, naming,
+and result parsing. Use tmux only when interactive steering is useful.
 
 ## Default Mode
 
@@ -30,10 +30,23 @@ session ids, assistant messages, errors, and terminal events explicitly.
 Use [scripts/agent-worker.mjs](scripts/agent-worker.mjs) for normalized runs,
 tmux launch/capture/session display, cleanup, and requested model overrides.
 
+## Naming Convention
+
+Session names are orchestrator-only labels. They are not passed to the
+subagent and do not affect behavior. Use this concise shape:
+
+```text
+<project>-<agent>-<tag>-<task>
+```
+
+Use short task tags such as `map`, `impl`, `review`, `debug`, or `verify`.
+The tag is only a human-readable bookmark; behavior comes from the launch
+flags and prompt text.
+
 ## Permission Modes
 
-This skill does not provide built-in role prompts. The orchestrator writes the
-task prompt and passes one explicit mode to the helper:
+The orchestrator writes the task prompt and passes one explicit permission mode
+to the helper:
 
 - `read-only`: inspect files, logs, and diffs; no edits.
 - `workspace-write`: allow scoped edits in the assigned cwd or worktree.
@@ -78,7 +91,7 @@ lifecycle, polling, steering, and abort procedures.
 
 ## Use Cases
 
-- Exploration: ask a cheap/fast worker to map files, summarize modules, or find
+- Mapping: ask a cheap/fast worker to map files, summarize modules, or find
   risks. Keep this read-only.
 - Implementation: create a separate git worktree and assign a narrow write set.
 - Review: ask a different worker to inspect a diff for bugs and missing tests.
@@ -86,6 +99,7 @@ lifecycle, polling, steering, and abort procedures.
 ## Orchestrator Rules
 
 1. Start workers with stable tmux session names and record their task ids.
+   Treat the session name as a label only.
 2. Record the CLI session id when the agent exposes one; it may allow resume
    with a different permission mode after restart.
 3. Send structured prompts as CLI args; use `tmux send-keys` for TUI workers.

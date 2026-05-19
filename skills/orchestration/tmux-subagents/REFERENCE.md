@@ -13,21 +13,25 @@ files, diffs, tests, structured events, and explicit final markers.
 Use predictable names:
 
 ```text
-<project>-<agent>-<purpose>-<task>
+<project>-<agent>-<tag>-<task>
 ```
 
 Examples:
 
 ```bash
-agenthub-pi-explore-skill-sync
+agenthub-pi-map-skill-sync
 agenthub-codex-impl-sync-flags
 agenthub-claude-review-sync-flags
 ```
 
+The name is only a tmux/orchestrator label. The subagent does not see it, and
+it does not grant instructions or permissions. Keep tags short and descriptive:
+`map`, `impl`, `review`, `debug`, `verify`.
+
 ### Permission Modes
 
-Choose permissions by purpose before starting the worker. The helper exposes
-three explicit modes instead of hiding authority behind roles:
+Choose permissions for the concrete task before starting the worker. The helper
+exposes three explicit modes:
 
 ```text
 read-only: inspect files, logs, diffs, and command output; no edits
@@ -175,7 +179,7 @@ and steer the TUI:
 Use default model and reasoning unless the user explicitly asks otherwise.
 
 ```bash
-tmux new-session -d -s agenthub-pi-explore -c "$PWD" 'pi --sandbox read-only'
+tmux new-session -d -s agenthub-pi-map -c "$PWD" 'pi --sandbox read-only'
 tmux new-session -d -s agenthub-claude-review -c "$PWD" \
   'claude --permission-mode plan'
 tmux new-session -d -s agenthub-codex-impl -c "$WORKTREE" \
@@ -314,8 +318,8 @@ updates.
 Use clear boundaries and a final marker:
 
 ```bash
-tmux send-keys -t agenthub-pi-explore \
-  'TASK tmux-001: Read-only. Find where skill-sync discovers private skills. Do not edit. End with STATUS/SUMMARY/CHANGED_FILES/TESTS/NEXT.' \
+tmux send-keys -t agenthub-pi-map \
+  'TASK map-001: Read-only. Find where skill-sync discovers private skills. Do not edit. End with STATUS/SUMMARY/CHANGED_FILES/TESTS/NEXT.' \
   Enter
 ```
 
@@ -477,14 +481,14 @@ summary plus files/status it should inspect.
 
 ## 4. Use Case Patterns
 
-### Read-Only Explorer
+### Read-Only Mapping
 
 Best worker: cheap/fast agent.
 
 Prompt:
 
 ```text
-TASK explore-001. Read-only. Find the files that implement third-party skill
+TASK map-001. Read-only. Find the files that implement third-party skill
 sync. Report paths and short responsibilities. Do not edit. End with STATUS.
 ```
 
