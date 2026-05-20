@@ -4,6 +4,11 @@ skills:
   agents:
   - codex
   - claude-code
+- skill: chough
+  source: hyperpuncher/dotagents
+  agents:
+  - codex
+  - claude-code
 - skill: diagnose
   source: mattpocock/skills
   agents:
@@ -51,11 +56,6 @@ skills:
   - claude-code
 - skill: setup-matt-pocock-skills
   source: mattpocock/skills
-  agents:
-  - codex
-  - claude-code
-- skill: smart-search
-  source: jackwener/opencli
   agents:
   - codex
   - claude-code
