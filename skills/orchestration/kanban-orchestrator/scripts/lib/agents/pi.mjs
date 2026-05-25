@@ -14,7 +14,7 @@ export function buildArgs({ sandbox, cwd, prompt, model, reasoning, systemPrompt
   if (supportsSandbox(cwd)) {
     args.push("--sandbox", sandbox);
   } else if (sandbox === "read-only") {
-    args.push("--tools", "read,grep,find,ls");
+    args.push("--tools", "read,grep,find,ls,bash");
   } else {
     fail("pi --sandbox is not available in this environment, so workspace-write/danger-full-access cannot be enforced");
   }
@@ -30,10 +30,10 @@ export function eventAction(event) {
     return { kind: "session", sessionId: event.id ?? null };
   }
   if (event.type === "message_end" && event.message?.role === "assistant") {
-    if (event.message.stopReason === "error") {
-      return { kind: "error", text: event.message.errorMessage ?? "Pi failed" };
-    }
     const text = textBlocks(event.message.content);
+    if (event.message.stopReason === "error") {
+      return { kind: "error", text: event.message.errorMessage ?? "Pi failed", messageText: text || null };
+    }
     return text ? { kind: "message", text } : null;
   }
   if (event.type === "turn_end" || event.type === "agent_end") {

@@ -112,6 +112,7 @@ export async function runStructuredWorker({ agent, sandbox, cwd, prompt, model, 
       if (agent === "codex" && !child.killed) child.kill("SIGTERM");
     } else if (action.kind === "error") {
       errors.push(action.text);
+      if (action.messageText) finalText = action.messageText;
     }
   };
 
