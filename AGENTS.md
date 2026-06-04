@@ -189,6 +189,54 @@ machine.
 - Before switching an existing machine to this repo, run
   `./scripts/skill-migrate` to import existing npx-managed skills.
 
+## Upstream Source Registry
+
+The sources below are the ground truth for third-party skills. When checking for
+updates, query each source directly rather than relying on cached memory of what
+skills exist.
+
+| Source | GitHub | Skill discovery | Package |
+|---|---|---|---|
+| `mattpocock/skills` | https://github.com/mattpocock/skills | `npx skills add mattpocock/skills --list` | — |
+| `jackwener/opencli` | https://github.com/jackwener/opencli | `npx skills add jackwener/opencli --list` | `@jackwener/opencli` (npm) |
+| `krzysztofdudek/ResearcherSkill` | https://github.com/krzysztofdudek/ResearcherSkill | `npx skills add krzysztofdudek/ResearcherSkill --list` | — |
+
+Add new sources here before adding individual skills to `thirdparty-skills.yml`.
+
+## Upstream Discovery Flow
+
+When the user asks to check for upstream updates, or periodically when
+maintaining the repo:
+
+1. For each source in the registry above, list available skills:
+
+   ```bash
+   npx skills add <source> --list
+   ```
+
+2. Cross-reference with `thirdparty-skills.yml` to find:
+   - **New skills**: in the source but not in the manifest.
+   - **Removed skills**: in the manifest but no longer in the source.
+   - **Package updates**: check the source's linked package for newer versions
+     (e.g. `npm view <pkg> version` vs `npm list -g <pkg>`).
+
+3. Read the source's README for any relevant changes, deprecations, or new
+   requirements.
+
+4. Report findings to the user as a table:
+   - New skills available (name + description).
+   - Skills that may have been removed upstream.
+   - Package updates available (current vs latest).
+
+5. **Ask before making changes.** Do not add, remove, or update skills or
+   packages without user approval.
+
+6. After approval, apply changes:
+   - New skill: add to `thirdparty-skills.yml`, then `--install`.
+   - Removed skill: remove from `thirdparty-skills.yml`, then `--remove`.
+   - Package update: `npm install -g <pkg>@latest`.
+   - Run `./scripts/skill-sync --thirdparty-only` to reconcile.
+
 ## Validation
 
 After changing scripts or manifests, run:
