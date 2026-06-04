@@ -24,6 +24,11 @@ skills:
   agents:
   - codex
   - claude-code
+- skill: prototype
+  source: mattpocock/skills
+  agents:
+  - codex
+  - claude-code
 - skill: opencli-adapter-author
   source: jackwener/opencli
   agents:
