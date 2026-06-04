@@ -39,6 +39,11 @@ skills:
   agents:
   - codex
   - claude-code
+- skill: opencli-browser-sitemap
+  source: jackwener/opencli
+  agents:
+  - codex
+  - claude-code
 - skill: opencli-usage
   source: jackwener/opencli
   agents:
