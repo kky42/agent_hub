@@ -56,7 +56,8 @@ Script-backed operations, only where the Kaggle CLI is insufficient:
 - Notebook version artifact download: `refs/scripts/nb_download.md`
 - Discussion topic list/filter with preserved raw metadata:
   `refs/scripts/disc_list.md`
-- Discussion comments with preserved raw metadata: `refs/scripts/disc_get.md`
+- Fetch a full discussion thread (opening post + nested comment tree with
+  author names, votes, dates): `refs/scripts/disc_get.md`
 - Notebook official/pinned flags: `refs/scripts/nb_flags.md`
 - Notebook version/score updates: `refs/scripts/nb_versions.md`
 
