@@ -12,11 +12,44 @@ For code competitions, submit a kernel output when appropriate:
 
 ```bash
 kaggle competitions submit -c SLUG -k OWNER/KERNEL -v VERSION -m "MESSAGE"
+kaggle competitions submit -c SLUG -k OWNER/KERNEL -v VERSION -f OUTPUT_FILE -m "MESSAGE"
 ```
 
 After submitting, poll `submissions` until the row reaches a terminal state or
 the error is clear. Record submission file path, message, timestamp, status,
 public score, and any error text in the active repo.
+
+If `kaggle competitions submit` prints only a generic `400 Client Error`, call
+the same endpoint through the installed Kaggle SDK and print the response body.
+The body often includes the actionable `FAILED_PRECONDITION`, such as a
+disallowed notebook accelerator or a missing expected output file. Use the
+existing authenticated Kaggle CLI environment:
+
+```python
+from kaggle.api.kaggle_api_extended import KaggleApi
+from kagglesdk.competitions.types.competition_api_service import (
+    ApiCreateCodeSubmissionRequest,
+)
+from requests.exceptions import HTTPError
+
+api = KaggleApi()
+api.authenticate()
+with api.build_kaggle_client() as client:
+    req = ApiCreateCodeSubmissionRequest()
+    req.competition_name = "SLUG"
+    req._kernel_owner = "OWNER"
+    req.kernel_slug = "KERNEL"
+    req.kernel_version = VERSION
+    req.file_name = "OUTPUT_FILE"
+    req.submission_description = "MESSAGE"
+    try:
+        print(client.competitions.competition_api_client.create_code_submission(req))
+    except HTTPError as err:
+        if err.response is not None:
+            print(err.response.status_code)
+            print(err.response.text)
+        raise
+```
 
 For public leaderboard forensics, inspect a team's public submissions when the
 team id is visible from `leaderboard --show`:

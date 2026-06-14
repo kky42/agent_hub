@@ -5,7 +5,7 @@ CLI can list current notebooks, pull source, and download latest output, but it
 does not expose complete version/LB history.
 
 ```bash
-python .agents/skills/datascience/kaggle/scripts/nb_versions.py \
+python3 .agents/skills/datascience/kaggle/scripts/nb_versions.py \
   --notebook OWNER/KERNEL \
   --out PATH
 ```
@@ -18,3 +18,5 @@ score/LB claims, and errors.
 For stable tracking, consume `schema_version`, `snapshot`, and
 `version_history`. `snapshot.author_identity` preserves notebook author user id,
 user name, display name, profile URL, and raw payload when available.
+
+When syncing many notebooks, fetch `nb_versions.py` only for new/changed/high-signal refs after a fast list snapshot and delta comparison. Choose the source version after this script runs; list snapshots can have stale or incomplete best-version metadata.

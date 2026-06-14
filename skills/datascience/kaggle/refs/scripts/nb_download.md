@@ -4,7 +4,7 @@ Download a Kaggle notebook version's source, Kaggle dataset inputs, and output
 zip with a stable manifest.
 
 ```bash
-python .agents/skills/datascience/kaggle/scripts/nb_download.py \
+python3 .agents/skills/datascience/kaggle/scripts/nb_download.py \
   --notebook OWNER/KERNEL \
   --version 26 \
   --all \
@@ -21,3 +21,7 @@ The manifest records `schema_version`, requested version, resolved
 `kernel_run_id`, title, status, evaluated time, source/input/output paths,
 hashes, command output, and zip manifest. Failed or private artifacts remain in
 the manifest with status/error rather than being silently skipped.
+
+For routine public-source review, download source only (`--source`) for the best
+visible LB version. Avoid `--all` unless inputs/outputs are explicitly needed,
+because outputs and dataset inputs can be large.

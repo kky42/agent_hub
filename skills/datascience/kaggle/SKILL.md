@@ -78,6 +78,12 @@ Search the local cache first when the user asks for previously refreshed
 competition brief, notebook, discussion, or submission information; refresh
 manually when the user asks for current data.
 
+For periodic public notebook/discussion syncs, use a delta-first workflow: fast
+list snapshots, compare stable signatures, fetch details only for new/changed or
+high-signal items, and summarize only those deltas. For large changed sets, split
+items into batches and use read-only subagents rather than rereading everything
+in the main context.
+
 Methodology:
 
 - General Kaggle principles: `refs/general/README.md`

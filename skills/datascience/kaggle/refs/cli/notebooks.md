@@ -19,6 +19,30 @@ kaggle kernels status OWNER/KERNEL
 kaggle kernels logs OWNER/KERNEL
 ```
 
+For code competitions, verify the allowed runtime in the official rules,
+starter notebook metadata, and submission error text before choosing hardware.
+Kaggle runtimes commonly include no accelerator and GPU options such as T4 or
+P100, and host-provided competitions may expose special runtimes. Do not assume
+that the default GPU is allowed or optimal.
+
+When a competition requires or forbids specific hardware, set
+`kernel-metadata.json` to the matching runtime. For a GPU runtime, use Kaggle's
+exact `machine_shape` enum value from the starter notebook or current Kaggle API
+metadata, for example:
+
+```json
+{
+  "enable_gpu": true,
+  "machine_shape": "KAGGLE_MACHINE_SHAPE"
+}
+```
+
+Use `enable_gpu: false` for a no-accelerator runtime. `enable_gpu: true` alone
+may default to a GPU that the competition does not allow. If using
+`kaggle kernels push --accelerator ...`, pass the same exact enum-style machine
+shape string. Treat accelerator choice as competition-specific evidence, not a
+general Kaggle default.
+
 `scoreDescending` sorts by current notebook score, but the CSV output may omit
 the score value. Cross-check visible score signals in the notebook title, page
 metadata, oEmbed, output logs, or notebook text.

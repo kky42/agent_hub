@@ -6,7 +6,7 @@ comment tree** with author names, votes, and dates. Use this when the task is
 in one artifact, with reply nesting and author identity preserved.
 
 ```bash
-python .agents/skills/datascience/kaggle/scripts/disc_get.py \
+python3 .agents/skills/datascience/kaggle/scripts/disc_get.py \
   --url "https://www.kaggle.com/competitions/SLUG/discussion/TOPIC_ID" \
   --format md          # or: json (default)
   --out PATH           # optional; prints to stdout otherwise

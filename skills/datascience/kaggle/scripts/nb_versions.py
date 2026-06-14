@@ -178,7 +178,7 @@ def normalize_author(raw: Any) -> dict[str, Any] | None:
     }
 
 
-def fetch_legacy_versions(ref: str, timeout: float, cookie: str | None) -> dict[str, Any]:
+def fetch_legacy_versions(ref: str, timeout: float, cookie: str | None = None) -> dict[str, Any]:
     owner, slug = split_ref(ref)
     if not owner:
         return {"error": "Legacy GetKernelViewModel requires OWNER/KERNEL", "versions": []}
