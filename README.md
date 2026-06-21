@@ -1,8 +1,8 @@
-# agent_hub
+# agent_skills
 
 One place to manage global skills across Codex, Pi, and Claude Code.
 
-![agent_hub skill flow](assets/intro.png)
+![agent_skills skill flow](assets/intro.png)
 
 ## What Lives Here
 
@@ -103,11 +103,11 @@ To see supported `npx skills` agent names, run:
 npx skills --help
 ```
 
-Personal skill target folders are configured with `AGENT_HUB_SKILL_TARGETS`.
-The default is:
+Personal skill target folders are configured with `AGENT_SKILLS_SKILL_TARGETS`.
+The legacy `AGENT_HUB_SKILL_TARGETS` name is still accepted. The default is:
 
 ```bash
-AGENT_HUB_SKILL_TARGETS="$HOME/.agents/skills:$HOME/.claude/skills"
+AGENT_SKILLS_SKILL_TARGETS="$HOME/.agents/skills:$HOME/.claude/skills"
 ```
 
 Set that variable before running `skill-sync` if your agents use different

@@ -22,8 +22,9 @@ Private skills are linked as flat top-level folders into runtime folders:
 ./skills/**/<skill>/SKILL.md -> ~/.claude/skills/<skill>
 ```
 
-The private skill target roots come from `AGENT_HUB_SKILL_TARGETS`, defaulting
-to `~/.agents/skills:~/.claude/skills`.
+The private skill target roots come from `AGENT_SKILLS_SKILL_TARGETS`, defaulting
+to `~/.agents/skills:~/.claude/skills`. The legacy `AGENT_HUB_SKILL_TARGETS`
+name is still accepted.
 
 Third-party skills are installed with `npx skills`. Use the default symlink
 behavior unless the user explicitly asks for `copy: true`.
@@ -55,9 +56,9 @@ Run:
 ```
 
 This is intended to be idempotent. It refreshes private-skill symlinks, removes
-stale agent_hub-owned private symlinks, and applies the third-party manifest.
+stale agent_skills-owned private symlinks, and applies the third-party manifest.
 
-On an existing machine with third-party skills installed before `agent_hub`,
+On an existing machine with third-party skills installed before `agent_skills`,
 run migration before the first full apply:
 
 ```bash
@@ -66,8 +67,9 @@ run migration before the first full apply:
 
 If `thirdparty-skills.yml` is empty but `npx skills` has global skills in its
 lock file, `skill-sync` stops instead of deleting everything. Only
-set `AGENT_HUB_CONFIRM_EMPTY_THIRDPARTY=1` when the user explicitly wants no
-npx-managed global skills.
+set `AGENT_SKILLS_CONFIRM_EMPTY_THIRDPARTY=1` when the user explicitly wants no
+npx-managed global skills. The legacy `AGENT_HUB_CONFIRM_EMPTY_THIRDPARTY` name
+is still accepted.
 
 For personal/private skill changes only, run:
 
@@ -183,9 +185,10 @@ machine.
 - If an upstream third-party skill is removed but still listed in
   `thirdparty-skills.yml`, `skill-sync` should warn, continue through the rest
   of the manifest, and print a failure summary at the end.
-- `AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS` controls the pause between
+- `AGENT_SKILLS_THIRDPARTY_SYNC_SLEEP_SECONDS` controls the pause between
   third-party installs. The default is `5` seconds to reduce GitHub rate-limit
-  pressure during repeated syncs.
+  pressure during repeated syncs. The legacy
+  `AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS` name is still accepted.
 - Before switching an existing machine to this repo, run
   `./scripts/skill-migrate` to import existing npx-managed skills.
 

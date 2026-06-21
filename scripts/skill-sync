@@ -13,8 +13,15 @@ thirdparty_skill=
 personal_only_requested=0
 thirdparty_only_requested=0
 
-: "${AGENT_HUB_SKILL_TARGETS:=$default_private_targets}"
-: "${AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS:=5}"
+if [ -z "${AGENT_SKILLS_SKILL_TARGETS:-}" ]; then
+  AGENT_SKILLS_SKILL_TARGETS="${AGENT_HUB_SKILL_TARGETS:-$default_private_targets}"
+fi
+export AGENT_SKILLS_SKILL_TARGETS
+
+if [ -z "${AGENT_SKILLS_THIRDPARTY_SYNC_SLEEP_SECONDS:-}" ]; then
+  AGENT_SKILLS_THIRDPARTY_SYNC_SLEEP_SECONDS="${AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS:-5}"
+fi
+export AGENT_SKILLS_THIRDPARTY_SYNC_SLEEP_SECONDS
 
 usage() {
   cat <<'EOF'
@@ -133,7 +140,7 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 if [ "$sync_private" -eq 1 ]; then
-python3 - "$private_skills" "$AGENT_HUB_SKILL_TARGETS" <<'PY'
+python3 - "$private_skills" "$AGENT_SKILLS_SKILL_TARGETS" <<'PY'
 import os
 import shutil
 import sys
@@ -255,7 +262,7 @@ for target_root in target_roots:
                     )
             else:
                 raise SystemExit(
-                    f"error: {target} already exists and is not an agent_hub symlink"
+                    f"error: {target} already exists and is not an agent_skills symlink"
                 )
 
         os.symlink(source, target, target_is_directory=True)
@@ -287,7 +294,12 @@ manifest = Path(sys.argv[1])
 lock_file = Path(sys.argv[2])
 action = sys.argv[3]
 target_skill = sys.argv[4]
-sleep_seconds = float(os.environ.get("AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS", "5"))
+sleep_seconds = float(
+    os.environ.get(
+        "AGENT_SKILLS_THIRDPARTY_SYNC_SLEEP_SECONDS",
+        os.environ.get("AGENT_HUB_THIRDPARTY_SYNC_SLEEP_SECONDS", "5"),
+    )
+)
 
 def clean_scalar(value: str):
     value = value.strip()
@@ -438,11 +450,14 @@ if action == "remove":
     raise SystemExit(0)
 
 if not desired and locked:
-    if os.environ.get("AGENT_HUB_CONFIRM_EMPTY_THIRDPARTY") != "1":
+    if (
+        os.environ.get("AGENT_SKILLS_CONFIRM_EMPTY_THIRDPARTY") != "1"
+        and os.environ.get("AGENT_HUB_CONFIRM_EMPTY_THIRDPARTY") != "1"
+    ):
         raise SystemExit(
             "thirdparty-skills.yml is empty, but npx skills has global skills "
             "in its lock file. Run ./scripts/skill-migrate first, "
-            "or set AGENT_HUB_CONFIRM_EMPTY_THIRDPARTY=1 to remove all "
+            "or set AGENT_SKILLS_CONFIRM_EMPTY_THIRDPARTY=1 to remove all "
             "npx-managed global skills."
         )
 
