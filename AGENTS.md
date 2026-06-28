@@ -200,6 +200,7 @@ skills exist.
 | `mattpocock/skills` | https://github.com/mattpocock/skills | `npx skills add mattpocock/skills --list` | — |
 | `jackwener/opencli` | https://github.com/jackwener/opencli | `npx skills add jackwener/opencli --list` | `@jackwener/opencli` (npm) |
 | `krzysztofdudek/ResearcherSkill` | https://github.com/krzysztofdudek/ResearcherSkill | `npx skills add krzysztofdudek/ResearcherSkill --list` | — |
+| `microsoft/playwright-cli` | https://github.com/microsoft/playwright-cli | `npx skills add microsoft/playwright-cli --list` | — |
 
 Add new sources here before adding individual skills to `thirdparty-skills.yml`.
 

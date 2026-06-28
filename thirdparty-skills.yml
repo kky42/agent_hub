@@ -34,6 +34,11 @@ skills:
   agents:
   - codex
   - claude-code
+- skill: playwright-cli
+  source: microsoft/playwright-cli
+  agents:
+  - codex
+  - claude-code
 - skill: opencli-adapter-author
   source: jackwener/opencli
   agents:
